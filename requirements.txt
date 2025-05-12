@@ -1,0 +1,17 @@
+loguru
+mkdocs
+pip
+python-dotenv
+ruff
+tqdm
+typer
+pandas
+requests
+scikit-learn
+matplotlib
+seaborn
+aiohttp
+asyncio
+logging
+typing
+backoff
