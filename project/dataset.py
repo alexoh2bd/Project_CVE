@@ -63,7 +63,7 @@ async def fetch_all_data(
 def main(
     # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
     input_path: Path = RAW_DATA_DIR / "dataset.csv",
-    output_path: Path = RAW_DATA_DIR / "kev20-24(1).csv",
+    output_path: Path = RAW_DATA_DIR / "CVE2020.csv",
     # ----------------------------------------------
 ):
 
@@ -77,7 +77,7 @@ def main(
     api_key = os.getenv("NVD_API_KEY")
 
     params = []
-    start_year, end_year = 2020, 2024
+    start_year, end_year = 2021, 2021
     for year in range(start_year, end_year + 1):
         # Create the four quarters for each year
         quarters = [

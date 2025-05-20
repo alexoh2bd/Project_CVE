@@ -46,6 +46,7 @@ CVEye is a predictive analytics project that assesses the real-world exploitatio
   - [CISA KEV Catalog](https://www.cisa.gov/known-exploited-vulnerabilities-catalog)
   - [EPSS (Exploit Prediction Scoring System)](https://www.first.org/epss/)
   - [ExploitDB](https://www.exploit-db.com/)
+  - [Common Weakness Enumeration](https://cwe.mitre.org/data/)
 
 ---
 
@@ -117,3 +118,21 @@ CVEye is a predictive analytics project that assesses the real-world exploitatio
 
 --------
 
+
+## Setup Environment and Prereq files
+
+python -m venv env
+source ./env/bin/activate
+pip install -r requirements.txt
+
+We need Common Weakness Enumeration (CWE) and Known Exploited Vulnerabilities (KEV) 
+
+They can be found at these websites
+
+#### CWE
+  https://cwe.mitre.org/data/downloads/
+  Found under 'Research Concepts'. Download CSV.zip in /data/external 
+
+#### KEV  
+  https://www.cisa.gov/known-exploited-vulnerabilities-catalog
+  Found under 'CSV'.
