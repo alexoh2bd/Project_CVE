@@ -12,9 +12,11 @@ logger.info(f"PROJ_ROOT path is: {PROJ_ROOT}")
 
 DATA_DIR = PROJ_ROOT / "data"
 RAW_DATA_DIR = DATA_DIR / "raw"
+MERGED_DATA_DIR = DATA_DIR / "merged"
 INTERIM_DATA_DIR = DATA_DIR / "interim"
 PROCESSED_DATA_DIR = DATA_DIR / "processed"
 EXTERNAL_DATA_DIR = DATA_DIR / "external"
+
 
 logger.info(f"Raw data path is: {RAW_DATA_DIR}")
 logger.info(f"Processed Data path is: {PROCESSED_DATA_DIR}")
