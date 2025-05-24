@@ -170,31 +170,29 @@ def process_batch(batch: Dict, output_path=PROCESSED_DATA_DIR, batch_idx=None):
     batch_dfs = {}
     file_paths = []
 
-    # try:
-    # Process each CVE in the batch
-    for cve_data in tqdm(batch):
+    try:
+        # Process each CVE in the batch
+        for cve_data in tqdm(batch):
+            cve_dfs = process_cve_data(cve_data)
 
-        cve_dfs = process_cve_data(cve_data)
-        # logger.info(f"cve_dfs {cve_dfs.items()}")
+            for name, df in cve_dfs.items():
+                # logger.info(f"name: {name} + df: {type(df)}")
 
-        for name, df in cve_dfs.items():
-            # logger.info(f"name: {name} + df: {type(df)}")
+                if name not in batch_dfs:
+                    batch_dfs[name] = pd.DataFrame(df)
+                else:
+                    batch_dfs[name] = pd.concat(
+                        [batch_dfs[name], pd.DataFrame(df)], ignore_index=True
+                    )
 
-            if name not in batch_dfs:
-                batch_dfs[name] = pd.DataFrame(df)
-            else:
-                batch_dfs[name] = pd.concat(
-                    [batch_dfs[name], pd.DataFrame(df)], ignore_index=True
-                )
-
-    for key, val in batch_dfs.items():
-        file_path = os.path.join(output_path, f"{key}_batch{batch_idx}.csv")
-        val.to_csv(file_path, index=False)
-        file_paths.append(file_path)
-        # logger.info(f"Saved {file_path} with {len(val)} rows")
-    del batch_dfs
-    # except Exception as e:
-    #     logger.info(f"Error processing CVE: {str(e)}", exc_info=True)
+        for key, val in batch_dfs.items():
+            file_path = os.path.join(output_path, f"{key}_batch{batch_idx}.csv")
+            val.to_csv(file_path, index=False)
+            file_paths.append(file_path)
+            # logger.info(f"Saved {file_path} with {len(val)} rows")
+        del batch_dfs
+    except Exception as e:
+        logger.error(f"Error processing CVE: {str(e)}", exc_info=True)
     gc.collect()
     return file_paths
 
@@ -226,32 +224,42 @@ def process_cve_batches(
 
     # Extract Vulnerabilities Column dictionary
     cve_list = []
-    for i in tqdm(range(len(df))):
-        cve_list.extend(ast.literal_eval(df[column_name][i]))
+    for _, row in tqdm(df.iterrows()):
+        templist = ast.literal_eval(row[column_name])
+        # print(templist[0]["cve"]["published"])
+        cve_list.extend(templist)
 
     # Batch Extracted CVE entries from the DataFrame
     logger.info(f"Extracted {len(cve_list)} CVE entries from the DataFrame")
-    logger.info(cve_list[0])
-    batches = [
-        cve_list[i : i + batch_size] for i in range(len(cve_list) // batch_size + 1)
-    ]
+    logger.info(len(cve_list) // batch_size + 1)
+    batches = []
+    for i in range(0, len(cve_list), batch_size):
+        batches.append(cve_list[i : i + batch_size])
+    batches.append(
+        cve_list[len(cve_list) - (len(cve_list) // batch_size) : len(cve_list)]
+    )
+    # logger.info(cve_list[i]["cve"]["published"])
     logger.info(f"Split CVEs into {len(batches)} batches of size {batch_size}")
-
+    # for batch in batches:
+    #     logger.info(batch[0]["cve"]["published"])
     # Use concurrent.futures' Process Pool Executor to run processes in parallel
     if incremental_save and output_path:
         if n_workers and n_workers > 1:
-            # Parallel Processing
-            with ProcessPoolExecutor(max_workers=n_workers) as exec:
-                process_fn = functools.partial(process_batch)
-                futures = [
-                    exec.submit(process_fn, batch, batch_idx=i)
-                    for i, batch in tqdm(enumerate(batches))
-                ]
-                for future in as_completed(futures):
-                    try:
-                        file_paths = future.result()
-                    except Exception as e:
-                        logger.error(f"Batch Processsing error: {e}")
+            try:
+                # Parallel Processing
+                with ProcessPoolExecutor(max_workers=n_workers) as exec:
+                    process_fn = functools.partial(process_batch)
+                    futures = [
+                        exec.submit(process_fn, batch, batch_idx=i)
+                        for i, batch in tqdm(enumerate(batches))
+                    ]
+                    for future in as_completed(futures):
+                        try:
+                            file_paths = future.result()
+                        except Exception as e:
+                            logger.error(f"Batch Processsing error: {e}")
+            except Exception as e:
+                logger.error(f"Processing Error")
         else:
             logger.info("Processing Batches Sequentially")
             for i, batch in enumerate(tqdm(batches)):

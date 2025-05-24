@@ -28,12 +28,14 @@ def define_kev(kev_path, main_path):
 
 @app.command()
 def main(
-    input_path: Path = RAW_DATA_DIR / "CVE2020.csv",
+    input_path: Path = RAW_DATA_DIR / "cve2020.csv",
     process_path: Path = PROCESSED_DATA_DIR,
     output_path: Path = MERGED_DATA_DIR,
 ):
+
     # Read input path
     df = pd.read_csv(input_path)
+    print(process_path)
     process_cve_batches(
         df=df,
         column_name="vulnerabilities",
@@ -45,10 +47,10 @@ def main(
 
     merge_batch_results(process_path, output_path)
 
-    # add Known Exploited Vulnerabilities column to main DataFrame of NVDs
-    kev_path = f"{RAW_DATA_DIR}/known_exploited_vulnerabilities.csv"
-    main_path = f"{MERGED_DATA_DIR}/main_combined.csv"
-    define_kev(kev_path, main_path)  # .to_csv(main_path)
+    # # add Known Exploited Vulnerabilities column to main DataFrame of NVDs
+    # kev_path = f"{RAW_DATA_DIR}/known_exploited_vulnerabilities.csv"
+    # main_path = f"{MERGED_DATA_DIR}/main_combined.csv"
+    # define_kev(kev_path, main_path)  # .to_csv(main_path)
 
 
 if __name__ == "__main__":

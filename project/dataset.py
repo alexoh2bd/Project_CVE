@@ -59,14 +59,36 @@ async def fetch_all_data(
     return results
 
 
+def get_Dates(start_year, end_year):
+    params = []
+    for year in range(start_year, end_year + 1):
+        # Create the four quarters for each year
+        for month in range(1, 12, 2):
+            _, last_date = calendar.monthrange(year, month + 1)
+            start_date = date(year, month, 1)
+            end_date = date(year, month + 1, 1)
+            dict = {
+                "pubStartDate": f"{year}-{start_date.strftime("%m")}-01-T00:00:00.000",
+                "pubEndDate": f"{year}-{end_date.strftime("%m")}-{last_date}-T23:59:59.999",
+            }
+            params.append(dict)
+    return params
+
+
 @app.command()
 def main(
     # ---- REPLACE DEFAULT PATHS AS APPROPRIATE ----
     input_path: Path = RAW_DATA_DIR / "dataset.csv",
-    output_path: Path = RAW_DATA_DIR / "CVE2020.csv",
+    output_path: Path = RAW_DATA_DIR / "CVE2024.csv",
     # ----------------------------------------------
 ):
 
+    api_key = os.getenv("NVD_API_KEY")
+
+    params = get_Dates(2024, 2024)
+
+    dates = pd.DataFrame(params)
+    print(dates)
     # Initialize API processor for a public REST Countries API
     processor = PublicAPIBatchProcessor(
         base_url="https://services.nvd.nist.gov/rest/json/cves/2.0/",
@@ -74,41 +96,9 @@ def main(
         rate_limit_per_minute=120,  # Be respectful of public APIs
     )
 
-    api_key = os.getenv("NVD_API_KEY")
-
-    params = []
-    start_year, end_year = 2021, 2021
-    for year in range(start_year, end_year + 1):
-        # Create the four quarters for each year
-        quarters = [
-            # Q1: Jan-Mar
-            {
-                "pubStartDate": f"{year}-01-01T00:00:00.000",
-                "pubEndDate": f"{year}-03-31T23:59:59.999",
-            },
-            # Q2: Apr-Jun
-            {
-                "pubStartDate": f"{year}-04-01T00:00:00.000",
-                "pubEndDate": f"{year}-06-30T23:59:59.999",
-            },
-            # Q3: Jul-Sep
-            {
-                "pubStartDate": f"{year}-07-01T00:00:00.000",
-                "pubEndDate": f"{year}-09-30T23:59:59.999",
-            },
-            # Q4: Oct-Dec
-            {
-                "pubStartDate": f"{year}-10-01T00:00:00.000",
-                "pubEndDate": f"{year}-12-31T23:59:59.999",
-            },
-        ]
-        params.extend(quarters)
-
-    df = pd.DataFrame(params)
-
     # Process the DataFrame
     nvd = processor.process_dataframe(
-        df=df,
+        df=dates,
         column_names=["pubStartDate", "pubEndDate"],
         endpoint="",
         param_names=["pubStartDate", "pubEndDate"],
