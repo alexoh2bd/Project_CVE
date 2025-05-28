@@ -206,11 +206,12 @@ def process_cve_batches(
     incremental_save=True,
 ):
     """
-    Process CVE data from API Request in batches
+    The useful column in the API response is the "vulnerabilities" column.
+    Vulnerabilities must be converted to a dict then multiple Dataframes turned CSV files.
 
     Args:
         df: Input DataFrame containing CVE data in string format
-        column_name: "vulnerabilities
+        column_name: "vulnerabilities"
         batch_size: # of CVEs per batch
         n_workers: Number of worker Processes
         incremental_save: Whether to save Results incrementally
@@ -226,36 +227,36 @@ def process_cve_batches(
     cve_list = []
     for _, row in tqdm(df.iterrows()):
         templist = ast.literal_eval(row[column_name])
-        # print(templist[0]["cve"]["published"])
         cve_list.extend(templist)
 
     # Batch Extracted CVE entries from the DataFrame
     logger.info(f"Extracted {len(cve_list)} CVE entries from the DataFrame")
-    logger.info(len(cve_list) // batch_size + 1)
     batches = []
     for i in range(0, len(cve_list), batch_size):
         batches.append(cve_list[i : i + batch_size])
     batches.append(
         cve_list[len(cve_list) - (len(cve_list) // batch_size) : len(cve_list)]
     )
-    # logger.info(cve_list[i]["cve"]["published"])
     logger.info(f"Split CVEs into {len(batches)} batches of size {batch_size}")
-    # for batch in batches:
-    #     logger.info(batch[0]["cve"]["published"])
+
     # Use concurrent.futures' Process Pool Executor to run processes in parallel
     if incremental_save and output_path:
         if n_workers and n_workers > 1:
             try:
-                # Parallel Processing
+                # Parallel Processing Pool Executor to work multiple batch jobs at once
                 with ProcessPoolExecutor(max_workers=n_workers) as exec:
+
+                    # Schedules the partial process function to be executed
                     process_fn = functools.partial(process_batch)
                     futures = [
                         exec.submit(process_fn, batch, batch_idx=i)
                         for i, batch in tqdm(enumerate(batches))
                     ]
+
+                    # Callback to fire when the future is done
                     for future in as_completed(futures):
                         try:
-                            file_paths = future.result()
+                            future.result()
                         except Exception as e:
                             logger.error(f"Batch Processsing error: {e}")
             except Exception as e:
@@ -282,8 +283,8 @@ def merge_batch_results(input_path, output_path):
 
     # Get all CSV files
     csv_files = [f for f in os.listdir(input_path) if f.endswith(".csv")]
-    # logger.info(csv_files)
-    # divide csv files into groups
+
+    # Categorically divide csv files into groups by
     csv_groups = {}
     for file in csv_files:
         chunks = file.split("_batch")
@@ -292,37 +293,48 @@ def merge_batch_results(input_path, output_path):
         else:
             csv_groups[chunks[0]].append(file)
 
+    # For each File Group in Directory,
     for group, files in tqdm(csv_groups.items()):
         logger.info(f"Merging {len(files)} files for {group}")
         dfs = []
+        loops = 2 if group == "descriptions" else 1
+        # loops = 1
 
-        for file in files:
-            file_path = os.path.join(input_path, file)
-            try:
-                df = pd.read_csv(file_path)
-                dfs.append(df)
-            except Exception as e:
-                logger.error(f"Error reading {file_path}: {e}")
-        if dfs:
-            combined_df = pd.concat(dfs, ignore_index=True)
-            if "cve_id" in combined_df.columns:
-                initial_len = len(combined_df)
-                if group == "main":
-                    combined_df = combined_df.drop_duplicates(subset=["cve_id"])
+        for loop in range(1, loops + 1):
+            length = int(len(files) / loops)
+            for i in range(length * (loop - 1), (length * loop)):
+                file_path = os.path.join(input_path, files[i])
+                try:
+                    # df = pd.read_csv(file_path)
+                    chunks = []
+                    # if group == "descriptions":
+                    #     df = df[df["lang"] == "en"]
+                    for chunk in pd.read_csv(file_path, chunksize=10000):
+                        chunks.append(chunk)
+                    dfs.append(pd.concat(chunks, ignore_index=True))
+                except Exception as e:
+                    logger.error(f"Error reading {file_path}: {e}")
 
-                else:
-                    if "cve_id" in combined_df.columns:
-                        combined_df = combined_df.drop_duplicates()
+            if dfs:
+                combined_df = pd.concat(dfs, ignore_index=True)
+                if "cve_id" in combined_df.columns:
+                    initial_len = len(combined_df)
+                    if group == "main":
+                        combined_df = combined_df.drop_duplicates(subset=["cve_id"])
 
-                if initial_len > len(combined_df):
-                    logger.info(
-                        f"Removed {initial_len} with  {len(combined_df)} rows. "
-                    )
+                    else:
+                        if "cve_id" in combined_df.columns:
+                            combined_df = combined_df.drop_duplicates()
 
-            combined_path = os.path.join(output_path, f"{group}_combined.csv")
-            combined_df.to_csv(combined_path)
-            logger.info(
-                f"Saved combined file {combined_path} with {len(combined_df)} rows. "
-            )
-            del dfs, combined_df
+                    if initial_len > len(combined_df):
+                        logger.info(
+                            f"Removed {initial_len} with {len(combined_df)} rows. "
+                        )
+
+                combined_path = os.path.join(output_path, f"{group}_combined{loop}.csv")
+                combined_df.to_csv(combined_path)
+                logger.info(
+                    f"Saved combined file {combined_path} with {len(combined_df)} rows. "
+                )
+        del dfs, combined_df
     logger.info(f"Completed Merge of {len(csv_files)} Files.")
