@@ -5,7 +5,7 @@ from tqdm import tqdm
 import typer
 import pandas as pd
 
-from project.config import PROCESSED_DATA_DIR
+from project.pdpipeline.config import PROCESSED_DATA_DIR
 
 app = typer.Typer()
 

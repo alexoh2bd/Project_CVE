@@ -195,14 +195,21 @@ class PublicAPIBatchProcessor:
         # Configure connection pool
         connector = aiohttp.TCPConnector(limit=self.max_concurrent_requests)
         timeout = aiohttp.ClientTimeout(total=self.timeout.total)
-
-        async with aiohttp.ClientSession(
-            connector=connector, timeout=timeout
-        ) as session:
-            # Fetch data for all parameter values in this batch
-            return await self.fetch_data(
-                session, endpoint, param_values, param_names, additional_params, api_key
-            )
+        try:
+            async with aiohttp.ClientSession(
+                connector=connector, timeout=timeout
+            ) as session:
+                # Fetch data for all parameter values in this batch
+                return await self.fetch_data(
+                    session,
+                    endpoint,
+                    param_values,
+                    param_names,
+                    additional_params,
+                    api_key,
+                )
+        except Exception as e:
+            self.logger.error(f"Batch Processing Error: {e}")
 
     def process_dataframe(
         self,
@@ -255,16 +262,17 @@ class PublicAPIBatchProcessor:
                 f"Processing batch {i//optimal_batch_size + 1}/{(total_items-1)//optimal_batch_size + 1} "
                 f"({len(batch_values)} items)"
             )
-
-            # Run batch processing using asyncio
-            batch_results = asyncio.run(
-                self._process_batch(
-                    batch_values, endpoint, param_names, additional_params, api_key
+            try:
+                # Run batch processing using asyncio
+                batch_results = asyncio.run(
+                    self._process_batch(
+                        batch_values, endpoint, param_names, additional_params, api_key
+                    )
                 )
-            )
 
-            all_results.extend(batch_results)
-
+                all_results.extend(batch_results)
+            except Exception as e:
+                self.logger.error(f"Batch Processing Error: {e}")
             # Add a small delay between batches to avoid API rate limits
             if i + optimal_batch_size < total_items:
                 time.sleep(1)

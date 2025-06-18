@@ -6,7 +6,7 @@ import typer
 import pandas as pd
 
 import ast
-from config import FIGURES_DIR, PROCESSED_DATA_DIR, RAW_DATA_DIR
+from project.pdpipeline.config import FIGURES_DIR, PROCESSED_DATA_DIR, RAW_DATA_DIR
 
 app = typer.Typer()
 
