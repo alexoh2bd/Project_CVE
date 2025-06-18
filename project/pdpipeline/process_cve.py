@@ -7,7 +7,7 @@ import ast
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import functools
 import itertools
-from config import PROCESSED_DATA_DIR
+from project.pdpipeline.config import PROCESSED_DATA_DIR
 import gc
 
 
@@ -297,8 +297,8 @@ def merge_batch_results(input_path, output_path):
     for group, files in tqdm(csv_groups.items()):
         logger.info(f"Merging {len(files)} files for {group}")
         dfs = []
-        loops = 2 if group == "descriptions" else 1
-        # loops = 1
+        # loops = 2 if group == "descriptions" else 1
+        loops = 1
 
         for loop in range(1, loops + 1):
             length = int(len(files) / loops)

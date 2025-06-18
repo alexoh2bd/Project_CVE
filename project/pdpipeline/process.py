@@ -4,8 +4,13 @@ import typer
 import pandas as pd
 import os
 
-from config import PROCESSED_DATA_DIR, RAW_DATA_DIR, MERGED_DATA_DIR, EXTERNAL_DATA_DIR
-from process_cve import process_cve_batches, merge_batch_results
+from project.pdpipeline.config import (
+    PROCESSED_DATA_DIR,
+    RAW_DATA_DIR,
+    MERGED_DATA_DIR,
+    EXTERNAL_DATA_DIR,
+)
+from project.pdpipeline.process_cve import process_cve_batches, merge_batch_results
 
 app = typer.Typer()
 

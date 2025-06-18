@@ -1,5 +1,5 @@
 import pandas as pd
-from config import RAW_DATA_DIR
+from project.pdpipeline.config import RAW_DATA_DIR
 
 nvd = pd.read_csv(f"{RAW_DATA_DIR}/kev.csv")
 kev = pd.read_csv(f"{RAW_DATA_DIR}/known_exploited_vulnerabilities.csv")
