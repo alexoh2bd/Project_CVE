@@ -120,6 +120,8 @@ CVEye is a predictive analytics project that assesses the real-world exploitatio
 
 
 ## Setup Environment and Prereq files
+
+After cloning the environment 
 `
 python -m venv venv
 source ./venv/bin/activate
@@ -133,8 +135,8 @@ They can be found at these websites
 #### NVD
   National Vulnerabilities Database
   This is the main National Vulnerabilities data source
-  https://nvd.nist.gov/
-
+  https://nvd.nist.gov/<br>
+  Get an API key [here](https://nvd.nist.gov/developers/request-an-api-key) and store it in a .env file in the root directory as NVD_API_KEY.
 
 #### KEV  
   https://www.cisa.gov/known-exploited-vulnerabilities-catalog
@@ -144,3 +146,5 @@ You can run the pipeline through the following command:
 ```
 python3 project/pdpipeline/process.py
 ```
+
+The final data should populate /data/merged directory
