@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import os
 from plconfig import RAW_DATA_DIR
 import polars as pl
+import tqdm
 
 
 app = typer.Typer()
@@ -25,18 +26,19 @@ def main(
     )
     # year range of the cve data we want to pull
     year_range = [2020, 2025]
-
     # Process the DataFrame
     nvd = extractor.extract(
         dates=year_range,
         endpoint="",
-        batch_size=20,
+        batch_size=10,
         API_KEY=api_key,
     )
+    print("Extracted Nvd data")
+
     nvd.write_parquet(CVE_Parquet)
 
     df = pl.read_parquet(CVE_Parquet)
-    print(df.head())
+    print(df.head()["vulnerabilities"])
 
 
 if __name__ == "__main__":

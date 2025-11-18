@@ -1,0 +1,13 @@
+pandas
+numpy
+seaborn
+tqdm
+dotenv
+loguru
+futures
+matplotlib
+typer
+polars
+dask
+torch
+aiohttp
