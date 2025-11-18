@@ -4,13 +4,13 @@ import typer
 import pandas as pd
 import os
 
-from project.pdpipeline.config import (
+from config import (
     PROCESSED_DATA_DIR,
     RAW_DATA_DIR,
     MERGED_DATA_DIR,
     EXTERNAL_DATA_DIR,
 )
-from project.pdpipeline.process_cve import process_cve_batches, merge_batch_results
+from process_cve import process_cve_batches, merge_batch_results
 
 app = typer.Typer()
 
@@ -47,7 +47,7 @@ def main(
     main = pd.read_csv(f"{MERGED_DATA_DIR}/main_combined1.csv")
     main["exploited"] = main["cve_id"].isin(kev["cveID"]).astype(int)
     main.to_csv(os.path.join(MERGED_DATA_DIR, f"Main.csv"))
-
+    
 
 if __name__ == "__main__":
     app()

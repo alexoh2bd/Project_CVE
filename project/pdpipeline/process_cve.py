@@ -7,7 +7,7 @@ import ast
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import functools
 import itertools
-from project.pdpipeline.config import PROCESSED_DATA_DIR
+from config import PROCESSED_DATA_DIR
 import gc
 
 

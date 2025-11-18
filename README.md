@@ -120,19 +120,27 @@ CVEye is a predictive analytics project that assesses the real-world exploitatio
 
 
 ## Setup Environment and Prereq files
-
-python -m venv env
-source ./env/bin/activate
+`
+python -m venv venv
+source ./venv/bin/activate
 pip install -r requirements.txt
+`
 
-We need Common Weakness Enumeration (CWE) and Known Exploited Vulnerabilities (KEV) 
+We need NVD and Known Exploited Vulnerabilities (KEV) 
 
 They can be found at these websites
 
-#### CWE
-  https://cwe.mitre.org/data/downloads/
-  Found under 'Research Concepts'. Download CSV.zip in /data/external 
+#### NVD
+  National Vulnerabilities Database
+  This is the main National Vulnerabilities data source
+  https://nvd.nist.gov/
+
 
 #### KEV  
   https://www.cisa.gov/known-exploited-vulnerabilities-catalog
   Found under 'CSV'.
+
+You can run the pipeline through the following command:
+```
+python3 project/pdpipeline/process.py
+```
