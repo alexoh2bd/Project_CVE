@@ -172,7 +172,7 @@ def process_batch(batch: Dict, output_path=PROCESSED_DATA_DIR, batch_idx=None):
 
     try:
         # Process each CVE in the batch
-        for cve_data in tqdm(batch):
+        for cve_data in (batch):
             cve_dfs = process_cve_data(cve_data)
 
             for name, df in cve_dfs.items():
