@@ -127,7 +127,11 @@ python -m venv venv
 source ./venv/bin/activate
 pip install -r requirements.txt
 `
+### GCP Setup
+To access Google Cloud BigQuery, we save a service account key in our repository as 'credentials.json'. 
 
+
+### Data sources
 We need NVD and Known Exploited Vulnerabilities (KEV) 
 
 They can be found at these websites
@@ -142,7 +146,7 @@ They can be found at these websites
   https://www.cisa.gov/known-exploited-vulnerabilities-catalog
   Found under 'CSV'.
 
-You can run the pipeline through the following command:
+You can run the pipeline through the following script:
 ```
 python3 project/pdpipeline/process.py
 ```

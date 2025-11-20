@@ -1,17 +1,17 @@
 from pathlib import Path
 import pandas as pd
 import typer
-from project.pdpipeline.batch import PublicAPIBatchProcessor
+from batch import PublicAPIBatchProcessor
 from dotenv import load_dotenv
 import os
-from project.pdpipeline.config import RAW_DATA_DIR
+from config import RAW_DATA_DIR,  LOGGER
 from datetime import date
 import calendar
+import sys
 
 
 app = typer.Typer()
 load_dotenv()
-
 
 def get_Dates(start_year, end_year):
     params = []
@@ -41,16 +41,18 @@ def main(
 
     api_key = os.getenv("NVD_API_KEY")
 
-    params = get_Dates(2024, 2024)
+    params = get_Dates(2022, 2024)
     dates = pd.DataFrame(params)
-    print(dates)
+    mcr=10, rate_lim=120
+    LOGGER.info(f"Ingesting at {mcr} max concurrent requests per minute and at Rate Limit of {rate_lim} per minute.")
     # Initialize API processor for a public REST Countries API
     processor = PublicAPIBatchProcessor(
         base_url="https://services.nvd.nist.gov/rest/json/cves/2.0/",
-        max_concurrent_requests=10,
-        rate_limit_per_minute=120,  # Be respectful of public APIs
+        max_concurrent_requests=mcr,
+        rate_limit_per_minute=rate_lim,  # Be respectful of public APIs
     )
 
+    LOGGER.info(f"Processing DataFrame")
     # Process the DataFrame
     nvd = processor.process_dataframe(
         df=dates,

@@ -8,6 +8,7 @@ from typing import List, Dict, Any, Callable, Optional, Union, Tuple
 import backoff
 import concurrent.futures
 from dataclasses import dataclass
+from config import LOGGER
 
 
 @dataclass
@@ -52,11 +53,6 @@ class PublicAPIBatchProcessor:
         self.request_interval = 60 / rate_limit_per_minute
         self.last_request_time = 0
 
-        # Configure logging
-        logging.basicConfig(
-            level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-        )
-        self.logger = logging.getLogger(__name__)
 
     @backoff.on_exception(
         backoff.expo,
@@ -209,7 +205,7 @@ class PublicAPIBatchProcessor:
                     api_key,
                 )
         except Exception as e:
-            self.logger.error(f"Batch Processing Error: {e}")
+            LOGGER.error(f"Batch Processing Error: {e}")
 
     def process_dataframe(
         self,
@@ -247,7 +243,7 @@ class PublicAPIBatchProcessor:
         param_values = df[column_names].drop_duplicates().values.tolist()
         total_items = len(param_values)
 
-        self.logger.info(f"Processing {total_items} unique parameter combinations")
+        LOGGER.info(f"Processing {total_items} unique parameter combinations")
 
         # Calculate optimal batch size based on rate limits and concurrency
         optimal_batch_size = min(batch_size, self.max_concurrent_requests * 2)
@@ -258,7 +254,7 @@ class PublicAPIBatchProcessor:
         # Create batches and process them
         for i in range(0, total_items, optimal_batch_size):
             batch_values = param_values[i : i + optimal_batch_size]
-            self.logger.info(
+            LOGGER.info(
                 f"Processing batch {i//optimal_batch_size + 1}/{(total_items-1)//optimal_batch_size + 1} "
                 f"({len(batch_values)} items)"
             )
@@ -272,7 +268,7 @@ class PublicAPIBatchProcessor:
 
                 all_results.extend(batch_results)
             except Exception as e:
-                self.logger.error(f"Batch Processing Error: {e}")
+                LOGGER.error(f"Batch Processing Error: {e}")
             # Add a small delay between batches to avoid API rate limits
             if i + optimal_batch_size < total_items:
                 time.sleep(1)
