@@ -65,8 +65,9 @@ def main(
 
     main1=f"{MERGED_DATA_DIR}/Main1.csv"
     # Save to Main1.csv
-    drop_cols = ["Unnamed: 0", "Unnamed: 0_x","Unnamed: 0_y","type_y"]
+    drop_cols = ["Unnamed: 0", "Unnamed: 0_x","Unnamed: 0_y","type_y",'version_end_including', 'criteria', 'match_criteria_id','version','vector_string']
     main.drop(drop_cols, axis=1, inplace=True)
+    main.dropna(inplace=True)
     main.to_csv(main1, index=False)
     LOGGER.info(f"Saved main features to {main1}")
 

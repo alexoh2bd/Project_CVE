@@ -7,7 +7,6 @@ import os
 from config import RAW_DATA_DIR,  LOGGER
 from datetime import date
 import calendar
-import sys
 
 
 app = typer.Typer()
@@ -41,9 +40,9 @@ def main(
 
     api_key = os.getenv("NVD_API_KEY")
 
-    params = get_Dates(2022, 2024)
+    params = get_Dates(2023, 2024)
     dates = pd.DataFrame(params)
-    mcr=10, rate_lim=120
+    mcr, rate_lim=10, 120
     LOGGER.info(f"Ingesting at {mcr} max concurrent requests per minute and at Rate Limit of {rate_lim} per minute.")
     # Initialize API processor for a public REST Countries API
     processor = PublicAPIBatchProcessor(

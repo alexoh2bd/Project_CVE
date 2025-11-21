@@ -38,7 +38,6 @@ LOG_DIR = PROJ_ROOT / "reports" / "logs"
 
 # Initialize immediately when imported
 LOGGER = init_logger(LOG_DIR)
-LOGGER.info(f"PROJ_ROOT path is: {PROJ_ROOT}")
 
 
 DATA_DIR = PROJ_ROOT / "data"
@@ -49,14 +48,8 @@ PROCESSED_DATA_DIR = DATA_DIR / "processed"
 EXTERNAL_DATA_DIR = DATA_DIR / "external"
 TRAIN_TEST_DIR = DATA_DIR / "traintest"
 
-
-
-
-LOGGER.info(f"Raw data path is: {RAW_DATA_DIR}")
-LOGGER.info(f"Processed Data path is: {PROCESSED_DATA_DIR}")
-
-
 MODELS_DIR = PROJ_ROOT / "models"
+
 
 REPORTS_DIR = PROJ_ROOT / "reports"
 FIGURES_DIR = REPORTS_DIR / "figures"

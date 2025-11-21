@@ -2,11 +2,8 @@ import pandas as pd
 import aiohttp
 import asyncio
 import time
-from tqdm.auto import tqdm
-import logging
 from typing import List, Dict, Any, Callable, Optional, Union, Tuple
 import backoff
-import concurrent.futures
 from dataclasses import dataclass
 from config import LOGGER
 
