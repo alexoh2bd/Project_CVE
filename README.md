@@ -120,14 +120,11 @@ CVEye is a predictive analytics project that assesses the real-world exploitatio
 
 
 ## Setup Environment and Prerequisite files
-`
+```
 python -m venv venv
 source ./venv/bin/activate
 pip install -r requirements.txt
-`
-### GCP Setup
-To access Google Cloud BigQuery, we save a service account key in our repository as 'credentials.json'. 
-
+```
 
 ### Data sources
 We need NVD and Known Exploited Vulnerabilities (KEV) 
@@ -143,9 +140,27 @@ They can be found at these websites
 
 #### KEV  
   https://www.cisa.gov/known-exploited-vulnerabilities-catalog
-  Found under 'CSV'.
+  Click on the first 'CSV' link and download the file into the repository's /data/external.
+
+
+### GCP Setup
+To access Google Cloud BigQuery, we save a service account key in our repository as 'credentials.json'. 
+
+
 
 You can run the pipeline through the following script:
 ```
 source ./run_experiment.sh
 ```
+
+To Upload to the cloud 
+**Note I have commented out the upload to BigQuery as this is a very data-intensive step"**
+
+
+### ML Pipeline
+
+To call the data from BigQuery and train the ml pipeline, run the ML pipeline command:
+```
+python3 project/pdpipeline/mlpipeline.py
+```
+Train and test data should populate the /data/traintest directory.
