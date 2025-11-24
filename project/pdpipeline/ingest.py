@@ -44,6 +44,7 @@ def main(
     dates = pd.DataFrame(params)
     mcr, rate_lim=10, 120
     LOGGER.info(f"Ingesting at {mcr} max concurrent requests per minute and at Rate Limit of {rate_lim} per minute.")
+    
     # Initialize API processor for a public REST Countries API
     processor = PublicAPIBatchProcessor(
         base_url="https://services.nvd.nist.gov/rest/json/cves/2.0/",

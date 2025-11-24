@@ -1,4 +1,6 @@
 
+/wandb
+/models
 
 credentials.json
 # Mac OS-specific storage files
@@ -10,6 +12,9 @@ credentials.json
 
 # csv
 *.csv
+# data
+*.npz
+*.joblib
 
 ## https://github.com/github/gitignore/blob/e8554d85bf62e38d6db966a50d2064ac025fd82a/Python.gitignore
 
