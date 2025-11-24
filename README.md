@@ -50,7 +50,7 @@ pip install -r requirements.txt
 
 To run the pipeline, you’ll need access to external services.
 
-### **1. NVD API Key (Required)**
+### **1. NVD API Key (Optional)**
 
 CVEye downloads vulnerability metadata directly from NVD.
 
@@ -62,7 +62,7 @@ CVEye downloads vulnerability metadata directly from NVD.
 NVD_API_KEY=your_api_key_here
 ```
 
-### **2. Google Cloud BigQuery (Required for Pipeline)**
+### **2. Google Cloud BigQuery (Required for Database Ingestion Pipeline)**
 
 The pipeline uses BigQuery for data processing.
 
@@ -85,7 +85,15 @@ Download the [CISA's KEV Catalog](https://www.cisa.gov/known-exploited-vulnerabi
 Run the ETL and modeling pipeline:
 
 ```bash
-python3 project/pdpipeline/process.py
+# End-to-End API ingestion, processing, loading to bigQuery, processing, and training LR model.
+source ./run_ingestion.sh
+```
+
+```bash
+
+# Pipeline steps pulling data from BigQuery and training LRmodel
+python3 project/pdpipeline/mlpipeline.py
+python3 project/modeling/LRmodel.py
 ```
 
 **Outputs:**
@@ -109,11 +117,7 @@ docker build --platform linux/amd64 -t cve_api_image .
 docker run -p 8080:8080 cve_api_image
 ```
 
-Run tests:
 
-```bash
-pytest
-```
 
 ### **B. Deploy to Google Cloud Run**
 
@@ -128,7 +132,11 @@ gcloud run deploy cve-api-image \
   --allow-unauthenticated
 ```
 
----
+Run tests of the deployed api:
+
+```bash
+pytest
+```
 
 ## 📂 Project Structure
 
@@ -161,6 +169,7 @@ gcloud run deploy cve-api-image \
 
 | Metric    | Score |
 | --------- | ----- |
+| Accuracy  | 1.0   |
 | ROC-AUC   | 1.0   |
 | Precision | 1.0   |
 | Recall    | 1.0   |
@@ -174,10 +183,8 @@ gcloud run deploy cve-api-image \
 **API:** FastAPI, Uvicorn
 **Infra:** Docker, Google Cloud Run, BigQuery
 
----
-
-If you'd like, I can also:
-✅ Add badges (build, Python version, Cloud Run, license)
-✅ Add examples of API requests/responses
-✅ Add diagrams (ASCII or mermaid)
-Just tell me!
+### Referenced AI 
+FastAPI Code: https://gemini.google.com/share/0660dc2e3cbd <br>
+Deploy ML Code: https://gemini.google.com/share/95cc22ffd1ec <br>
+VL Interpretability: https://gemini.google.com/share/c656d0762764 <br>
+README: https://gemini.google.com/app/e4e03351e78bbfa8

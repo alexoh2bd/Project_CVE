@@ -4,14 +4,14 @@ import numpy as np
 import pickle
 from .config.config import logger, SETTINGS
 import os
+# had partial assistance from Gemini 3 Pro: https://gemini.google.com/app/9bd9bd0bef74a364
+
 
 app = FastAPI(title=SETTINGS.PROJECT_NAME)
-
 
 @app.get("/health")
 def health_check():
     return {"status": "ok", "env": SETTINGS.ENVIRONMENT}
-
 
 @app.post("/predict", response_model=BatchPredictionOutput)
 def predict(payload: VectorInput):
@@ -32,10 +32,7 @@ def predict(payload: VectorInput):
             model = pickle.load(file)
     
         # Make Batch Predictions
-        # predictions will be an array, e.g., [0, 1, 0]
         predictions = model.predict(X) 
-        
-        # pred_probs will be a matrix, e.g., [[0.9, 0.1], [0.2, 0.8], ...]
         pred_probs_all = model.predict_proba(X) 
 
         results_list = []

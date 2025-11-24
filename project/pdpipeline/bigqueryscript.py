@@ -8,7 +8,6 @@ from tqdm.auto import tqdm
 
 
 # OPTION A: Point to the JSON key file path explicitly
-# Ideally, set this in your environment variables, but this works for testing.
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "credentials.json"
 
 def send_to_bigQuery(data_rows):
@@ -35,20 +34,12 @@ def send_to_bigQuery(data_rows):
 
 # Example usage
 if __name__ == "__main__":
-    # Data must match the schema you defined in Phase 1
     # data = []
     csv_file_path = (f"{MERGED_DATA_DIR}/Main1.csv")
     LOGGER.info(f"Loading {csv_file_path}")
     with open(csv_file_path, mode='r', newline='', encoding='utf-8') as csvfile:
         # Use DictReader to read CSV rows as dictionaries
         data = list(csv.DictReader(csvfile))
-            # for i, row in enumerate(csv_reader):
-            #     data.append(row)
-            # # row.pop("")
-            # if i < 10:
-            #     data.append(row)
-            # else: 
-            #     break
     
     send_to_bigQuery(data)
     del data

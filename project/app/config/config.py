@@ -2,7 +2,7 @@
 from pydantic_settings import BaseSettings
 import logging
 import sys
-
+# Partially Credited to Gemini 3 [https://gemini.google.com/share/0660dc2e3cbd]
 def setup_logging():
     # 1. Create a logger
     logger = logging.getLogger("my_ml_api")

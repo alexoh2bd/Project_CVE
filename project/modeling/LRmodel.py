@@ -8,6 +8,7 @@ from config import TRAIN_TEST_DIR, MODELS_DIR, LOGGER, API_MODELS_DIR
 from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_auc_score
 from sklearn.model_selection import cross_val_score
 import wandb
+# Had partial assistance refining original script from ChatGPT-5: https://chatgpt.com/share/6924698d-3924-800c-afa0-ac254bf0f571
 
 wandb.init(
     project="CVE-logreg-pipeline",
@@ -54,3 +55,16 @@ with open(api_file, 'wb') as file:
 LOGGER.info(f"Saved model to {api_file} and {model_file}")
 
 
+
+# LOG artifacts to WandB
+artifact = wandb.Artifact(
+    name="logreg-model",
+    type="model",
+    description="Trained Logistic Regression model for CVE classification",
+)
+
+artifact.add_file(model_file)
+artifact.add_file(api_file)
+wandb.log_artifact(artifact)
+
+wandb.finish()

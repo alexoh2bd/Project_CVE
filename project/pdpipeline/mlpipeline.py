@@ -14,6 +14,7 @@ from sklearn.preprocessing import OneHotEncoder
 
 from config import TRAIN_TEST_DIR, LOGGER
 
+# Had partial assistance with ChatGPT-5: https://chatgpt.com/share/6923f960-dc78-800c-8acc-11ae8e1589d8
 app = typer.Typer()
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "credentials.json"
 
@@ -89,7 +90,6 @@ def clean_ml(df: pd.DataFrame):
 
     return X_train, X_test, y_train, y_test, preprocessor, numeric_cols, cat_cols
 
-# These util functions were refined by ChatGPT-5 on November 22, 2025
 # utils to save data and processors
 def save_sparse_matrix(path: Path, matrix):
     scipy.sparse.save_npz(str(path), matrix)

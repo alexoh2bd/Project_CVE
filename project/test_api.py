@@ -1,4 +1,4 @@
-# Tests written by Gemini 3 Pro on November 23, 2025
+# Tests written by Gemini 3 Pro on November 23, 2025 [https://gemini.google.com/share/0660dc2e3cbd]
 import requests
 import time
 import sys
