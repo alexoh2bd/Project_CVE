@@ -50,6 +50,8 @@ TRAIN_TEST_DIR = DATA_DIR / "traintest"
 
 MODELS_DIR = PROJ_ROOT / "models"
 
+API_MODELS_DIR = PROJ_ROOT / "project" / "app"/ "models"
+
 
 REPORTS_DIR = PROJ_ROOT / "reports"
 FIGURES_DIR = REPORTS_DIR / "figures"
