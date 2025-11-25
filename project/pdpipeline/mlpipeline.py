@@ -12,11 +12,25 @@ from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 
-from config import TRAIN_TEST_DIR, LOGGER
+from project.pdpipeline.config import TRAIN_TEST_DIR, LOGGER, PROJ_ROOT
+from project.config_loader import get_config
 
 # Had partial assistance with ChatGPT-5: https://chatgpt.com/share/6923f960-dc78-800c-8acc-11ae8e1589d8
 app = typer.Typer()
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "credentials.json"
+
+CONFIG = get_config()
+DATA_CFG = CONFIG.get("data", {})
+ML_CFG = CONFIG.get("ml_pipeline", {})
+
+
+def _resolve_path(path_value: str, fallback: Path) -> Path:
+    if not path_value:
+        return fallback
+    path = Path(path_value)
+    if not path.is_absolute():
+        path = PROJ_ROOT / path
+    return path
 
 
 # ML cleaning & splitting
@@ -105,22 +119,32 @@ def save_splits(output_dir: Path, X_train, X_test, y_train, y_test):
 
 
 def save_metadata(output_dir: Path, preprocessor, numeric_cols, cat_cols):
+    feature_names = []
+    try:
+        feature_names = preprocessor.get_feature_names_out().tolist()
+    except Exception:
+        # Fallback: no feature names available; keep going
+        feature_names = []
+
     joblib.dump(preprocessor, output_dir / "preprocessor.joblib")
     joblib.dump(
-        {"numeric_cols": numeric_cols, "cat_cols": cat_cols},
+        {
+            "numeric_cols": numeric_cols,
+            "cat_cols": cat_cols,
+            "onehot_features": feature_names,
+        },
         output_dir / "feature_metadata.joblib",
     )
 
 
 # MAIN
 @app.command()
-def main(output_path: Path = TRAIN_TEST_DIR):
+def main(
+    output_path: Path = _resolve_path(DATA_CFG.get("traindata_dir", ""), TRAIN_TEST_DIR),
+    query: str = typer.Option(ML_CFG.get("query", "SELECT * FROM `ml-pipeline-lab-478617.cve.ML_features`")),
+):
     client = bigquery.Client()
 
-    query = """
-        SELECT *
-        FROM `ml-pipeline-lab-478617.cve.ML_features`
-    """
     LOGGER.info(f"Querying...\n{query}")
 
     df = client.query_and_wait(query).to_dataframe()

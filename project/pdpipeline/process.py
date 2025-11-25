@@ -12,17 +12,31 @@ from config import (
     EXTERNAL_DATA_DIR,
     TRAIN_TEST_DIR,
     LOGGER,
+    PROJ_ROOT,
 )
 from process_cve import process_cve_batches, merge_batch_results
 
+from project.config_loader import get_config
+
 app = typer.Typer()
 
+CONFIG = get_config()
+DATA_CFG = CONFIG.get("data", {})
+
+
+def _resolve_path(path_value: str, fallback: Path) -> Path:
+    if not path_value:
+        return fallback
+    path = Path(path_value)
+    if not path.is_absolute():
+        path = PROJ_ROOT / path
+    return path
 
 @app.command()
 def main(
-    input_path: Path = RAW_DATA_DIR / "CVE2024.csv",
-    process_path: Path = PROCESSED_DATA_DIR,
-    output_path: Path = MERGED_DATA_DIR,
+    input_path: Path = _resolve_path(DATA_CFG.get("raw_output", ""), RAW_DATA_DIR / "CVE2024.csv"),
+    process_path: Path = _resolve_path(DATA_CFG.get("processed_dir", ""), PROCESSED_DATA_DIR),
+    output_path: Path = _resolve_path(DATA_CFG.get("merged_dir", ""), MERGED_DATA_DIR),
 ):
 
     
@@ -42,7 +56,10 @@ def main(
     LOGGER.info(f"Cleaning Feature Datasets")
 
     # Merge feature datasets
-    kev = pd.read_csv(f"{EXTERNAL_DATA_DIR}/known_exploited_vulnerabilities.csv")
+    kev_path = _resolve_path(
+        DATA_CFG.get("kev_csv", ""), EXTERNAL_DATA_DIR / "known_exploited_vulnerabilities.csv"
+    )
+    kev = pd.read_csv(kev_path)
     main = pd.read_csv(f"{MERGED_DATA_DIR}/main_combined1.csv")
 
 
