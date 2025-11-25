@@ -1,171 +1,60 @@
-
-
-# CVEye 🔍🛡️
+# CVEye
 
 ### *A Machine Learning Lens on Exploitable Vulnerabilities*
 
-CVEye is a predictive analytics platform that evaluates the real-world exploitation risk of known vulnerabilities (CVEs). By combining data from the **NVD**, **CISA KEV**, and **EPSS**, CVEye predicts whether a vulnerability is likely to be exploited in the wild—helping security teams prioritize remediation with confidence.
+CVEye is a predictive analytics platform that estimates the real-world exploitation risk of known security vulnerabilities (CVEs). By combining data from **NVD** and **CISA KEV**, CVEye produces a probability score indicating whether a vulnerability is likely to be exploited in the wild—empowering security teams to prioritize remediation with confidence.
 
 ---
 
-## 🏗️ Architecture Overview
+# 📌 1. Project Overview & Goals
 
-CVEye is built on a two-stage system:
+Modern vulnerability databases track thousands of CVEs each year, but only a fraction are actively exploited. CVEye aims to:
 
-### **1. ML Pipeline**
-
-* Ingests raw vulnerability and exploitation data
-* Processes and engineers features using **BigQuery** and **Pandas**
-* Trains a predictive model
-* Serializes the model to `.pkl`
-
-### **2. API Service**
-
-* A **FastAPI** application running on **Google Cloud Run**
-* Loads the trained model for real-time predictions
-* Exposes an HTTP API for external integration
+* Predict whether a CVE is likely to be exploited.
+* Provide a machine-learning–driven risk score for prioritization.
+* Automate ingestion and processing of vulnerability metadata.
+* Offer a deployable API for real-time predictions.
+* Deliver a lightweight front-end for interacting with model results.
 
 ---
 
-## 🚀 Step 1: Environment Setup
+# 📦 2. Dataset Description
 
-Clone the repository and install dependencies.
+CVEye integrates two major datasets:
 
-```bash
-# Clone the repo
-git clone https://github.com/your-username/Project_CVE.git
-cd Project_CVE
+### **1. National Vulnerability Database (NVD)**
+* NVD [API Key Link (developers)](https://nvd.nist.gov/developers/request-an-api-key)
+* Source of core CVE metadata: CVSS, CWE, descriptions, severity, etc.
+* Pulled using the optional NVD API key.
+* Format: JSON.
 
-# Create and activate virtual environment
-python -m venv venv
-source ./venv/bin/activate      # Windows: venv\Scripts\activate
+### **2. CISA Known Exploited Vulnerabilities (KEV) Catalog**
+* KEV [Website Link](https://www.cisa.gov/known-exploited-vulnerabilities-catalog)
+* Provides ground-truth exploitation labels.
+* Manually downloaded as CSV into `data/external/`.
 
-# Install dependencies
-pip install -r requirements.txt
-```
+### **Merged Dataset**
 
----
-
-## 🔑 Step 2: Configuration & Credentials
-
-To run the pipeline, you’ll need access to external services.
-
-### **1. NVD API Key (Optional)**
-
-CVEye downloads vulnerability metadata directly from NVD.
-
-1. Request an API key from NVD
-2. Create a `.env` file in the project root
-3. Add your key:
+All datasets are processed and joined in BigQuery and output to:
 
 ```
-NVD_API_KEY=your_api_key_here
-```
-
-### **2. Google Cloud BigQuery (Required for Database Ingestion Pipeline)**
-
-The pipeline uses BigQuery for data processing.
-
-1. Create a Service Account with BigQuery access
-2. Download the JSON key
-3. Save it as `credentials.json` in the project root (this file is ignored by Git)
-
----
-
-## ⚙️ Step 3: Run the ML Pipeline
-
-This process downloads raw data, merges datasets, generates features, and trains the model.
-
-### **A. Add External Data**
-
-Download the [CISA's KEV Catalog](https://www.cisa.gov/known-exploited-vulnerabilities-catalog) and place it into the `data/external/` folder.
-
-### **B. Execute Processing & Training**
-
-Run the ETL and modeling pipeline:
-
-```bash
-# End-to-End API ingestion, processing, loading to bigQuery, processing, and training LR model.
-source ./run_ingestion.sh
-```
-
-```bash
-
-# Pipeline steps pulling data from BigQuery and training LRmodel
-python3 project/pdpipeline/mlpipeline.py
-python3 project/modeling/LRmodel.py
-```
-
-**Outputs:**
-
-* Processed dataset → `data/merged/`
-* Trained model → `models/logistic_regression_model.pkl`
-
----
-
-## 🐳 Step 4: API Deployment (Docker + Cloud Run)
-
-### **A. Local Testing with Docker**
-
-Use the `--platform` flag to ensure compatibility (recommended for Apple Silicon).
-
-```bash
-# Build the API image (forces AMD64 for Cloud Run compatibility)
-docker build --platform linux/amd64 -t cve_api_image .
-
-# Run locally on port 8080
-docker run -p 8080:8080 cve_api_image
-```
-
-
-
-### **B. Deploy to Google Cloud Run**
-
-Ensure you have a `.gcloudignore` that excludes temporary files (e.g., `venv/`) but **includes** the `models/` folder.
-
-Deploy:
-
-```bash
-gcloud run deploy cve-api-image \
-  --source . \
-  --port 8080 \
-  --allow-unauthenticated
-```
-
-Run tests of the deployed api:
-
-```bash
-pytest
-```
-
-## 📂 Project Structure
-
-```
-├── Dockerfile
-├── Makefile
-├── README.md
-├── requirements.txt
-├── credentials.json        # GCP service account (ignored by Git)
-├── .env                    # NVD API key (ignored by Git)
-├── .gcloudignore
-│
-├── data
-│   ├── external            # CISA KEV CSV
-│   └── merged              # Final training data
-│
-├── models                  # Serialized ML models (.pkl)
-│
-└── project
-    ├── app                 # FastAPI service
-    │   ├── main.py
-    │   └── schemas.py
-    └── pdpipeline          # ETL, feature engineering, training
-        └── process.py
+data/merged/processed_dataset.csv
 ```
 
 ---
 
-## 📊 Key Model Metrics
+# 🤖 3. Model Architecture & Evaluation
+
+### **Model Architecture**
+
+The ML pipeline includes:
+
+* Feature extraction from NVD (CVSS metrics, CWE, textual data)
+* Feature engineering using Pandas & BigQuery SQL
+* Logistic Regression model (baseline)
+* Model serialization via pickle → `models/logistic_regression_model.pkl`
+
+### **Evaluation Metrics**
 
 | Metric    | Score |
 | --------- | ----- |
@@ -174,17 +63,214 @@ pytest
 | Precision | 1.0   |
 | Recall    | 1.0   |
 
+Here’s a clean, GitHub-ready way to integrate **W&B metric visualization** directly into your *Model Architecture & Evaluation* section.
+I’ll add it **without disrupting your structure**, and in a style consistent with the rest of the README.
+
 ---
 
-## 🛠️ Tech Stack
+### **Model Architecture**
 
-**Core:** Python 3.10+, Pandas, NumPy
-**ML:** Scikit-Learn, SHAP
-**API:** FastAPI, Uvicorn
-**Infra:** Docker, Google Cloud Run, BigQuery
+The ML pipeline includes:
 
-### Referenced AI 
-FastAPI Code: https://gemini.google.com/share/0660dc2e3cbd <br>
-Deploy ML Code: https://gemini.google.com/share/95cc22ffd1ec <br>
-VL Interpretability: https://gemini.google.com/share/c656d0762764 <br>
-README: https://gemini.google.com/app/e4e03351e78bbfa8
+* Feature extraction from NVD (CVSS metrics, CWE, textual data)
+* Feature engineering using Pandas & BigQuery SQL
+* Logistic Regression model (baseline)
+* Model serialization via pickle → `models/logistic_regression_model.pkl`
+
+---
+
+### **Evaluation Metrics**
+
+| Metric    | Score |
+| --------- | ----- |
+| Accuracy  | 1.0   |
+| ROC-AUC   | 1.0   |
+| Precision | 1.0   |
+| Recall    | 1.0   |
+
+*(These values reflect the most recent training output—subject to change based on dataset updates.)*
+
+---
+
+### 📈 **Viewing Model Metrics in Weights & Biases (W&B)**
+
+CVEye tracks all training runs, metrics, and artifacts using **Weights & Biases**.
+
+To view training dashboards:
+
+1. Log in to W&B
+
+   ```bash
+   wandb login
+   ```
+
+2. Open the project dashboard:
+   **[https://wandb.ai/](https://wandb.ai/alexoh2020-duke-university/CVE-logreg-pipeline)**
+
+3. Once a project member shares dashboard access, you can explore:
+
+   * Training & validation curves
+   * ROC-AUC over time
+   * Precision/recall trends
+   * Confusion matrices
+   * Model artifacts (logged `.pkl` files)
+   * System metrics (CPU, GPU, memory usage)
+
+
+
+---
+
+# ☁️ 4. Cloud Services Used
+
+| Service                      | Purpose                                                   |
+| ---------------------------- | --------------------------------------------------------- |
+| **Google BigQuery**          | Centralized storage, feature engineering, data processing |
+| **Google Cloud Run**         | Deployment of FastAPI prediction service                  |
+| **Google Artifact Registry** | (Optional) Stores versioned Docker images                 |
+| **Google IAM**               | Handles service account privileges                        |
+
+---
+
+# 🛠️ 5. Setup & Usage Instructions
+
+## 🔧 Environment Setup
+
+```bash
+git clone https://github.com/your-username/Project_CVE.git
+cd Project_CVE
+
+python -m venv venv
+source ./venv/bin/activate   # Windows: venv\Scripts\activate
+
+pip install -r requirements.txt
+```
+
+---
+
+## 🔑 Configuration & Credentials
+
+### **NVD API Key (optional)**
+
+Create `.env`:
+Get an NVD API key [here](https://nvd.nist.gov/developers/)
+
+```
+NVD_API_KEY=your_api_key_here
+```
+
+### **Google Cloud BigQuery (required)**
+
+Save GCP service account key as:
+
+```
+credentials.json
+```
+
+---
+
+## ⚙️ Running the ML Pipeline
+
+### 1. Add External Data
+
+Download CISA KEV CSV → place into:
+
+```
+data/external/
+```
+
+### 2. Run End-to-End Pipeline
+
+```bash
+source ./run_ingestion.sh
+```
+
+Or run the second half of the pipeline with components pulling data from BigQuery and training LRmodel:
+
+```bash
+# Pull data from BigQuery, Train / Test Split, and produce processor
+python3 project/pdpipeline/mlpipeline.py
+# Train LR model
+python3 project/modeling/LRmodel.py
+```
+
+**Outputs:**
+
+* Processed data → `data/merged/`
+* Model → `models/logistic_regression_model.pkl`
+
+---
+
+# 🐳 6. Deploying the API (Docker + Cloud Run)
+
+### A. Local Testing
+
+```bash
+docker build --platform linux/amd64 -t cve_api_image .
+docker run -p 8080:8080 cve_api_image
+```
+
+### B. Deploy to Google Cloud Run
+
+```bash
+gcloud run deploy cve-api-image \
+  --source . \
+  --port 8080 \
+  --allow-unauthenticated
+```
+
+---
+
+# 🔗 7. Links to Deployed Services
+
+> Replace these with your actual deployment URLs
+
+| Service                  | URL                                                            |
+| ------------------------ | -------------------------------------------------------------- |
+| **CVE Prediction API** | [https://cve-api-image-499266163270.us-east1.run.app](https://cve-api-image-499266163270.us-east1.run.app) |
+| **CVEye Front-End App**  | [https://your-frontend-url](https://your-frontend-url)         |
+
+---
+
+# 📂 8. Project Structure
+
+```
+├── Dockerfile
+├── Makefile
+├── README.md
+├── requirements.txt
+├── credentials.json        # GCP service account (ignored)
+├── .env                    # NVD API key (ignored)
+│
+├── data
+│   ├── external            # CISA KEV CSV
+│   └── merged              # Final training data
+│
+├── models                  # Trained ML models (.pkl)
+│
+└── project
+    ├── app                 # FastAPI service
+    │   ├── main.py
+    │   └── schemas.py
+    └── pdpipeline          # ETL + Modeling pipeline
+        └── process.py
+```
+
+---
+
+# 🛠️ Tech Stack
+
+* **Python**, Pandas, NumPy
+* **Scikit-Learn**, SHAP
+* **FastAPI**, Uvicorn
+* **Docker**, **Cloud Run**, **BigQuery**
+
+---
+
+# 📚 Referenced AI
+
+FastAPI Code: [https://gemini.google.com/share/0660dc2e3cbd](https://gemini.google.com/share/0660dc2e3cbd)
+Deploy ML Code: [https://gemini.google.com/share/95cc22ffd1ec](https://gemini.google.com/share/95cc22ffd1ec)
+VL Interpretability: [https://gemini.google.com/share/c656d0762764](https://gemini.google.com/share/c656d0762764)
+README: [https://gemini.google.com/app/e4e03351e78bbfa8](https://gemini.google.com/app/e4e03351e78bbfa8)
+
+
