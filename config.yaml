@@ -1,0 +1,24 @@
+data:
+  raw_dataset: data/raw/dataset.csv
+  raw_output: data/raw/CVE2024.csv
+  kev_csv: data/external/known_exploited_vulnerabilities.csv
+  processed_dir: data/processed
+  merged_dir: data/merged
+  traindata_dir: data/traintest
+
+ingest:
+  start_year: 2023
+  end_year: 2024
+  batch_size: 10
+  max_concurrent_requests: 10
+  rate_limit_per_minute: 120
+
+ml_pipeline:
+  query: |
+    SELECT *
+    FROM `ml-pipeline-lab-478617.cve.ML_features`
+
+training:
+  model_path: models/logreg_pipeline.pkl
+  experiment_name: cve-risk-model
+  run_name: baseline-logreg

@@ -138,6 +138,36 @@ Run tests of the deployed api:
 pytest
 ```
 
+## 🌐 Step 5: Front-end (Streamlit on Hugging Face Spaces)
+
+You can drive the public API with a lightweight Streamlit UI.
+
+**Run locally**
+
+```bash
+pip install -r frontend/requirements.txt
+API_URL=http://localhost:8000/predict streamlit run frontend/app.py
+```
+
+**Deploy to Hugging Face Spaces**
+
+1. Push `frontend/` to your repo (this project already includes `frontend/app.py` and `frontend/requirements.txt`).
+2. Create a new Space → choose **Streamlit** → connect this repository or upload the `frontend/` folder.
+3. In Space **Settings → Secrets**, add:
+   * `API_URL=https://your-cloud-run-url/predict`
+   * (optional) `HEALTH_URL=https://your-cloud-run-url/health`
+4. Deploy the Space; the app will read the secrets and call your public API.
+
+**Live app**
+
+Add your Space link here once deployed (e.g., `https://huggingface.co/spaces/<org>/<space-name>`).
+
+**What the front-end does**
+
+- Collects CVSS-style inputs (scores and categories), uses the saved preprocessor (`data/traintest/preprocessor.joblib`) to expand them into the 91-feature vector expected by the model, and sends them to `/predict`.
+- Shows predicted class (Not Exploited / Likely Exploited) with confidence; highlights “High” only when class=1 and above the adjustable threshold.
+- Defaults to the Cloud Run API URL you provided; override via env vars if needed.
+
 ## 📂 Project Structure
 
 ```
@@ -154,6 +184,10 @@ pytest
 │   └── merged              # Final training data
 │
 ├── models                  # Serialized ML models (.pkl)
+│
+├── data/traintest
+│   ├── preprocessor.joblib        # Saved ColumnTransformer (used by Streamlit UI)
+│   └── feature_metadata.joblib    # Feature names/metadata (used by Streamlit UI)
 │
 └── project
     ├── app                 # FastAPI service
@@ -183,6 +217,7 @@ pytest
 **API:** FastAPI, Uvicorn
 **Infra:** Docker, Google Cloud Run, BigQuery
 
+Assistance: parts of this project (including the Streamlit front-end wiring and documentation) were completed with Codex on 2025-11-24.
 ### Referenced AI 
 FastAPI Code: https://gemini.google.com/share/0660dc2e3cbd <br>
 Deploy ML Code: https://gemini.google.com/share/95cc22ffd1ec <br>
