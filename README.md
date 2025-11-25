@@ -227,7 +227,7 @@ gcloud run deploy cve-api-image \
 | Service                  | URL                                                            |
 | ------------------------ | -------------------------------------------------------------- |
 | **CVE Prediction API** | [https://cve-api-image-499266163270.us-east1.run.app](https://cve-api-image-499266163270.us-east1.run.app) |
-| **CVEye Front-End App**  | [https://your-frontend-url](https://your-frontend-url)         |
+| **CVEye Front-End App**  | [https://projectcve-874mkb2crban6nve6devfv.streamlit.app/](https://projectcve-874mkb2crban6nve6devfv.streamlit.app/)         |
 
 ---
 
@@ -238,7 +238,7 @@ Run tests of the deployed api:
 pytest
 ```
 
-# 🌐 9: Front-end
+# 🌐 9: Streamlit App Front-end
 
 You can drive the public API with a lightweight Streamlit UI.
 
@@ -246,21 +246,13 @@ You can drive the public API with a lightweight Streamlit UI.
 
 ```bash
 pip install -r frontend/requirements.txt
-API_URL=http://localhost:8000/predict streamlit run frontend/app.py
+API_URL=http://localhost:8000/predict 
+streamlit run frontend/app.py
 ```
 
-**Deploy to Hugging Face Spaces**
 
-1. Push `frontend/` to your repo (this project already includes `frontend/app.py` and `frontend/requirements.txt`).
-2. Create a new Space → choose **Streamlit** → connect this repository or upload the `frontend/` folder.
-3. In Space **Settings → Secrets**, add:
-   * `API_URL=https://your-cloud-run-url/predict`
-   * (optional) `HEALTH_URL=https://your-cloud-run-url/health`
-4. Deploy the Space; the app will read the secrets and call your public API.
-
-**Live app**
-
-Add your Space link here once deployed (e.g., `https://huggingface.co/spaces/<org>/<space-name>`).
+**Live app URL:**
+[https://projectcve-874mkb2crban6nve6devfv.streamlit.app/](https://projectcve-874mkb2crban6nve6devfv.streamlit.app/).
 
 **What the front-end does**
 
@@ -278,6 +270,7 @@ Add your Space link here once deployed (e.g., `https://huggingface.co/spaces/<or
 ├── credentials.json        # GCP service account (ignored)
 ├── .env                    # NVD API key (ignored)
 │
+├── frontend                # frontend streamlit app 
 ├── data
 │   ├── external            # CISA KEV CSV
 │   └── merged              # Final training data
